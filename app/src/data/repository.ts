@@ -12,6 +12,7 @@
  * older versions of the app to the current shape.
  */
 import type { AppState, CardProgress, DayActivity, Verb, Word } from '@/core/types';
+import { scheduler } from '@/core/scheduler';
 import { kvGet, kvSet, kvDel } from './kv';
 
 /** The keys under which each piece of data is stored. */
@@ -35,14 +36,27 @@ export const EMPTY_STATE: AppState = {
  * the language of each entry, the failure counter on each card, the newer
  * settings, and the richer per-day activity format. Anything missing gets
  * a sensible default, so old data keeps working after an app update.
+ *
+ * Words used to have one progress PER DIRECTION (it-fr / fr-it). Now a word
+ * is a single card asked in a random direction: when we meet the old shape,
+ * we keep the progress of the most-practised direction.
  */
 function migrate(raw: AppState): AppState {
   const fixProgress = (p: CardProgress): CardProgress => ({ ...p, lapses: p.lapses ?? 0 });
 
+  const mergeWordProgress = (p: unknown): CardProgress => {
+    const rec = p as Record<string, CardProgress> | undefined;
+    if (rec && typeof rec === 'object' && 'due' in rec) return fixProgress(rec as unknown as CardProgress);
+    const a = rec?.['it-fr'];
+    const b = rec?.['fr-it'];
+    const best = a && b ? (b.reps > a.reps ? b : a) : (a ?? b);
+    return best ? fixProgress(best) : scheduler.initial();
+  };
+
   const words: Word[] = (raw.words ?? []).map((w) => ({
     ...w,
     lang: w.lang ?? 'fr',
-    progress: { 'it-fr': fixProgress(w.progress['it-fr']), 'fr-it': fixProgress(w.progress['fr-it']) },
+    progress: mergeWordProgress(w.progress),
   }));
 
   const verbs: Verb[] = (raw.verbs ?? []).map((v) => ({

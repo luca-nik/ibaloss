@@ -32,9 +32,9 @@ export default function HowItWorksScreen() {
             carta.
           </p>
           <p>
-            Ogni carta ha il suo <strong>calendario personale</strong>: le due direzioni di una
-            parola (italiano→francese e francese→italiano) e ogni tempo di un verbo viaggiano
-            separati, perché saperle in un verso non significa saperle nell'altro.
+            Ogni carta ha il suo <strong>calendario personale</strong>: una parola è una sola carta,
+            chiesta ogni volta in una direzione a caso (italiano→francese o francese→italiano),
+            mentre ogni tempo di un verbo viaggia per conto suo.
           </p>
         </CardContent>
       </Card>

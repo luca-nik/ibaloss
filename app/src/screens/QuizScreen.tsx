@@ -23,7 +23,7 @@ import { Progress } from '@/components/ui/progress';
 import AccentBar from '@/components/AccentBar';
 import { useStore } from '@/state/StoreContext';
 import { conjugationMatches } from '@/core/normalize';
-import { sessionCounts, tenseLabel, type QuizItem } from '@/core/session';
+import { sessionCounts, tenseLabel, randomDir, type QuizItem } from '@/core/session';
 import { PERSONS, type Grade } from '@/core/types';
 
 interface Props {
@@ -62,16 +62,19 @@ export default function QuizScreen({ initialItems, title, onExit, onPlayMore }: 
     return valid.length ? valid[item.personIdx % valid.length] : 0;
   }, [item]);
 
-  /** Put a failed card back at the end of the queue (verbs get a new random person). */
+  /** Put a failed card back at the end of the queue (verbs get a new random
+   *  person, words get a new random direction). */
   function requeue(it: QuizItem) {
     const fresh: QuizItem =
-      it.kind === 'verb' ? { ...it, personIdx: Math.floor(Math.random() * 6) } : it;
+      it.kind === 'verb'
+        ? { ...it, personIdx: Math.floor(Math.random() * 6) }
+        : { ...it, dir: randomDir() };
     setQueue((q) => [...q, fresh]);
   }
 
   /** Report the grade to the store (which forwards it to the scheduler). */
   function recordGrade(it: QuizItem, g: Grade) {
-    if (it.kind === 'word') gradeWord(it.word.id, it.dir, g);
+    if (it.kind === 'word') gradeWord(it.word.id, g);
     else gradeVerb(it.verb.id, it.tense, g);
     if (!gradedKeys.current.has(it.key)) {
       gradedKeys.current.add(it.key);

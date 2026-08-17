@@ -89,10 +89,7 @@ export default function LibraryScreen({ onEditWord, onEditVerb }: Props) {
                   <div className="mt-1 flex flex-wrap gap-1">
                     {w.chapter && <Badge variant="secondary">{w.chapter}</Badge>}
                     <Badge variant="outline" className="font-mono text-[11px]">
-                      IT→FR: {dueLabel(w.progress['it-fr'])}
-                    </Badge>
-                    <Badge variant="outline" className="font-mono text-[11px]">
-                      FR→IT: {dueLabel(w.progress['fr-it'])}
+                      {dueLabel(w.progress)}
                     </Badge>
                   </div>
                 </div>

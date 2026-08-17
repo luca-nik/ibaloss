@@ -1,20 +1,21 @@
 /**
  * WordFormScreen.tsx — Adding or editing one vocabulary word.
  *
- * A word is just an Italian ↔ French pair, plus two optional extras:
- * the textbook chapter it belongs to (used for chapter practice) and a
- * free note (e.g. gender). The same form is used for creating and for
- * editing: when `editing` is passed, the fields start pre-filled.
+ * A word is just an Italian ↔ French pair, plus an optional free note
+ * (e.g. gender). The form is kept minimal: the accented-characters bar and
+ * the note field stay hidden behind small toggle buttons and appear only
+ * when you ask for them. The same form is used for creating and for
+ * editing: when `editing` is passed, the fields start pre-filled (and the
+ * note, if present, starts visible).
  */
 import { useState } from 'react';
-import { Save } from 'lucide-react';
+import { Save, StickyNote } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AccentBar from '@/components/AccentBar';
 import { useStore } from '@/state/StoreContext';
-import { allChapters } from '@/core/session';
 import type { Word } from '@/core/types';
 
 interface Props {
@@ -25,18 +26,25 @@ interface Props {
 }
 
 export default function WordFormScreen({ editing, onDone }: Props) {
-  const { state, addWord, updateWord } = useStore();
+  const { addWord, updateWord } = useStore();
   const [it, setIt] = useState(editing?.it ?? '');
   const [fr, setFr] = useState(editing?.fr ?? '');
-  const [chapter, setChapter] = useState(editing?.chapter ?? '');
   const [note, setNote] = useState(editing?.note ?? '');
-  const chapters = state ? allChapters(state) : [];
+  // Hidden extras: opened on demand (the note starts open if there is one).
+  const [showAccents, setShowAccents] = useState(false);
+  const [showNote, setShowNote] = useState(!!editing?.note);
 
   const valid = it.trim() && fr.trim();
 
   function save() {
     if (!valid) return;
-    const payload = { it: it.trim(), fr: fr.trim(), chapter: chapter.trim(), note: note.trim() || undefined };
+    // The chapter field no longer exists in the form; existing words keep theirs.
+    const payload = {
+      it: it.trim(),
+      fr: fr.trim(),
+      chapter: editing?.chapter ?? '',
+      note: showNote ? note.trim() || undefined : undefined,
+    };
     if (editing) updateWord(editing.id, payload);
     else addWord(payload);
     onDone();
@@ -67,25 +75,38 @@ export default function WordFormScreen({ editing, onDone }: Props) {
               </div>
             </div>
 
-            {/* Quick accents for the French field */}
-            <AccentBar />
+            {/* Hidden extras: tap to reveal */}
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground"
+                onClick={() => setShowAccents((v) => !v)}
+              >
+                <span className="mr-1 font-semibold">à ç é</span> caratteri speciali
+              </Button>
+              {!showNote && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground"
+                  onClick={() => setShowNote(true)}
+                >
+                  <StickyNote className="mr-1 h-4 w-4" /> nota
+                </Button>
+              )}
+            </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label htmlFor="w-ch">Capitolo / lezione (facoltativo)</Label>
-                {/* datalist suggests the chapters you already used */}
-                <Input id="w-ch" value={chapter} onChange={(e) => setChapter(e.target.value)} placeholder="Capitolo 4" list="chapters" />
-                <datalist id="chapters">
-                  {chapters.map((c) => (
-                    <option key={c} value={c} />
-                  ))}
-                </datalist>
-              </div>
+            {showAccents && <AccentBar />}
+
+            {showNote && (
               <div className="space-y-1.5">
                 <Label htmlFor="w-note">Nota (facoltativa)</Label>
                 <Input id="w-note" value={note} onChange={(e) => setNote(e.target.value)} placeholder="es. femminile" />
               </div>
-            </div>
+            )}
 
             <div className="flex gap-2 pt-2">
               <Button type="submit" variant="cta" disabled={!valid} className="flex-1">

@@ -35,7 +35,7 @@ export default function StatsScreen() {
   const streak = currentStreak(state.activity);
   const record = bestStreak(state.activity);
   const totalCards =
-    words.length * 2 + verbs.reduce((n, v) => n + verbTenseIds(v).length, 0);
+    words.length + verbs.reduce((n, v) => n + verbTenseIds(v).length, 0);
 
   // ── Last 7 days (for the mini bar chart) ─────────────────────────────────
   const week = Array.from({ length: 7 }, (_, i) => {
@@ -48,7 +48,7 @@ export default function StatsScreen() {
   // ── "Le tue nemiche": the cards with the most failures ────────────────────
   const nemeses: Nemesis[] = [
     ...words.flatMap((w) => [
-      { label: w.it, detail: w.fr, lapses: w.progress['it-fr'].lapses + w.progress['fr-it'].lapses },
+      { label: w.it, detail: w.fr, lapses: w.progress.lapses },
     ]),
     ...verbs.flatMap((v) =>
       verbTenseIds(v).map((t: TenseId) => ({

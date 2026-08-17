@@ -45,12 +45,18 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 /**
- * One question in a quiz session. Either a word in one direction, or a verb
- * in one tense at one (randomly chosen) person.
+ * One question in a quiz session. Either a word (the direction is drawn
+ * randomly when the card is built, and re-drawn if it is re-queued), or a
+ * verb in one tense at one (randomly chosen) person.
  */
 export type QuizItem =
   | { kind: 'word'; key: string; word: Word; dir: Direction; isNew: boolean }
   | { kind: 'verb'; key: string; verb: Verb; tense: TenseId; personIdx: number; isNew: boolean };
+
+/** Toss a coin: which direction will this word be asked in? */
+export function randomDir(): Direction {
+  return Math.random() < 0.5 ? 'it-fr' : 'fr-it';
+}
 
 /** Which tenses of this verb actually have forms filled in (and can be quizzed). */
 export function verbTenseIds(verb: Verb): TenseId[] {
@@ -60,7 +66,7 @@ export function verbTenseIds(verb: Verb): TenseId[] {
   });
 }
 
-/** Collect every card (words in both directions + verb tenses), split into due vs new. */
+/** Collect every card (one per word + one per verb tense), split into due vs new. */
 function collect(state: AppState, chapter?: string) {
   const lang = state.settings.lang;
   const due: { item: QuizItem; priority: number }[] = [];
@@ -69,12 +75,10 @@ function collect(state: AppState, chapter?: string) {
   for (const w of state.words) {
     if (w.lang !== lang) continue;
     if (chapter && w.chapter !== chapter) continue;
-    for (const dir of ['it-fr', 'fr-it'] as Direction[]) {
-      const p = w.progress[dir];
-      const item: QuizItem = { kind: 'word', key: `${w.id}:${dir}`, word: w, dir, isNew: p.state === 'new' };
-      if (p.state === 'new') news.push(item);
-      else if (chapter || isDue(p)) due.push({ item, priority: priorityOf(p) });
-    }
+    const p = w.progress;
+    const item: QuizItem = { kind: 'word', key: w.id, word: w, dir: randomDir(), isNew: p.state === 'new' };
+    if (p.state === 'new') news.push(item);
+    else if (chapter || isDue(p)) due.push({ item, priority: priorityOf(p) });
   }
 
   for (const v of state.verbs) {

@@ -13,7 +13,7 @@
  * to "save".
  */
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import type { AppState, Direction, Grade, LangId, TenseId, Verb, Word } from '@/core/types';
+import type { AppState, Grade, LangId, TenseId, Verb, Word } from '@/core/types';
 import { scheduler } from '@/core/scheduler';
 import { todayStr } from '@/core/dates';
 import { EMPTY_STATE, loadAll, saveAll, exportJson, parseImport, wipeAll } from '@/data/repository';
@@ -34,7 +34,7 @@ export interface Store {
   addVerb: (v: Omit<Verb, 'id' | 'createdAt' | 'progress' | 'lang'>) => void;
   updateVerb: (id: string, patch: Partial<Pick<Verb, 'infinitive' | 'it' | 'chapter' | 'tenses'>>) => void;
   deleteVerb: (id: string) => void;
-  gradeWord: (id: string, dir: Direction, grade: Grade) => void;
+  gradeWord: (id: string, grade: Grade) => void;
   gradeVerb: (id: string, tense: TenseId, grade: Grade) => void;
   setNewPerDay: (n: number) => void;
   setSessionCap: (n: number) => void;
@@ -99,8 +99,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
               lang: s.settings.lang,
               id: uid(),
               createdAt: Date.now(),
-              // A new word starts as two independent "new" cards, one per direction.
-              progress: { 'it-fr': scheduler.initial(), 'fr-it': scheduler.initial() },
+              // A new word starts as a single "new" card (direction is random each time).
+              progress: scheduler.initial(),
             },
           ],
         })),
@@ -123,15 +123,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
       // Grading = ask the SCHEDULER for the new progress, then log the activity.
       // The store doesn't know (or care) how the algorithm computes dates.
-      gradeWord: (id, dir, grade) =>
+      gradeWord: (id, grade) =>
         update((s) =>
           bumpActivity(
             {
               ...s,
               words: s.words.map((w) =>
-                w.id === id
-                  ? { ...w, progress: { ...w.progress, [dir]: scheduler.grade(w.progress[dir], grade) } }
-                  : w,
+                w.id === id ? { ...w, progress: scheduler.grade(w.progress, grade) } : w,
               ),
             },
             grade,

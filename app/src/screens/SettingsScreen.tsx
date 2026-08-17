@@ -3,12 +3,12 @@
  *
  * 1. How many NEW cards a daily session may introduce (reviews are never
  *    capped — they always all show up).
- * 2. Backup: export everything to a JSON file, or restore from one. This
- *    matters because the data lives only on this device (see kv.ts).
- * 3. Danger zone: erase everything and start over.
+ * 2. A plain-words explanation of the review algorithm.
+ * 3. Cloud sync: the passphrase that mirrors every change to the server
+ *    (that is also the backup — no manual export needed anymore).
  */
-import { useRef, useState } from 'react';
-import { Brain, CloudUpload, Download, Upload } from 'lucide-react';
+import { useState } from 'react';
+import { Brain, CloudUpload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -21,9 +21,7 @@ interface Props {
 }
 
 export default function SettingsScreen({ onOpenHowItWorks }: Props) {
-  const { state, setNewPerDay, setSessionCap, exportBackup, importBackup, resetAll } = useStore();
-  const fileRef = useRef<HTMLInputElement>(null);
-  const [message, setMessage] = useState('');
+  const { state, setNewPerDay, setSessionCap } = useStore();
   const [passphrase, setLocalPassphrase] = useState(getPassphrase());
   const [syncMessage, setSyncMessage] = useState('');
 
@@ -40,23 +38,6 @@ export default function SettingsScreen({ onOpenHowItWorks }: Props) {
         ? 'Sincronizzazione attiva: i tuoi dati sono ora anche nel cloud.'
         : 'Non riesco a contattare il server. Controlla la passphrase e la connessione.',
     );
-  }
-
-  /** Download the whole vocabulary as a JSON file. */
-  function downloadBackup() {
-    const blob = new Blob([exportBackup()], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `ibaloss-backup-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  /** Read a backup file chosen by the user and restore it. */
-  async function onImportFile(file: File) {
-    const ok = importBackup(await file.text());
-    setMessage(ok ? 'Backup importato correttamente.' : 'File non valido: importazione annullata.');
   }
 
   return (
@@ -140,60 +121,6 @@ export default function SettingsScreen({ onOpenHowItWorks }: Props) {
             <CloudUpload className="mr-1 h-4 w-4" /> Attiva sincronizzazione
           </Button>
           {syncMessage && <p className="text-sm font-semibold text-primary">{syncMessage}</p>}
-        </CardContent>
-      </Card>
-
-      <Card className="border-2 border-tropical-charcoal/15">
-        <CardHeader>
-          <CardTitle className="text-lg">Backup dei dati</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <p className="font-accent text-sm text-muted-foreground">
-            I tuoi dati sono salvati solo su questo dispositivo. Esporta un backup ogni tanto per
-            non perderli, o per spostarli su un altro dispositivo.
-          </p>
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" onClick={downloadBackup}>
-              <Download className="mr-1 h-4 w-4" /> Esporta JSON
-            </Button>
-            <Button variant="outline" onClick={() => fileRef.current?.click()}>
-              <Upload className="mr-1 h-4 w-4" /> Importa JSON
-            </Button>
-            {/* Invisible file picker, opened by the button above */}
-            <input
-              ref={fileRef}
-              type="file"
-              accept="application/json,.json"
-              className="hidden"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) void onImportFile(f);
-                e.target.value = '';
-              }}
-            />
-          </div>
-          {message && <p className="text-sm font-semibold text-primary">{message}</p>}
-        </CardContent>
-      </Card>
-
-      <Card className="border-2 border-destructive/40">
-        <CardHeader>
-          <CardTitle className="text-lg text-destructive">Zona pericolosa</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Button
-            variant="destructive"
-            onClick={() => {
-              if (
-                window.confirm(
-                  'Eliminare TUTTE le parole, i verbi e i progressi? Questa azione non si può annullare.',
-                )
-              )
-                resetAll();
-            }}
-          >
-            Cancella tutti i dati
-          </Button>
         </CardContent>
       </Card>
     </div>

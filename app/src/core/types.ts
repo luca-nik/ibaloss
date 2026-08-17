@@ -7,7 +7,8 @@
  * live here in one neutral place.
  */
 
-/** A card can be asked in two directions: Italian→French or French→Italian. */
+/** A card can be asked in two directions: Italian→French or French→Italian.
+ *  The direction is drawn randomly each time the card comes up (see session.ts). */
 export type Direction = 'it-fr' | 'fr-it';
 
 /** How the user did on a card: failed it, knew it, or found it trivial. */
@@ -17,8 +18,8 @@ export type Grade = 'again' | 'good' | 'easy';
 export type CardState = 'new' | 'learning' | 'review';
 
 /**
- * What the app remembers about one card (one direction of one word, or one
- * tense of one verb). The scheduling algorithm reads and updates this.
+ * What the app remembers about one card (one word, or one tense of one
+ * verb). The scheduling algorithm reads and updates this.
  */
 export interface CardProgress {
   /** Next day the card should be reviewed, as a local date 'YYYY-MM-DD'. */
@@ -60,8 +61,8 @@ export interface Word {
   /** Optional hint, e.g. gender or usage. */
   note?: string;
   createdAt: number;
-  /** Each direction is learned (and scheduled) independently. */
-  progress: Record<Direction, CardProgress>;
+  /** ONE card per word: the direction is drawn randomly each time it comes up. */
+  progress: CardProgress;
 }
 
 /** The six French verb persons, in fixed order. */
