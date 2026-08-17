@@ -1,0 +1,79 @@
+/*
+ * index.css — Global styles and design tokens.
+ *
+ * This file is where the "Happy Art Tropical" design system (see design.md)
+ * becomes actual code: colors, fonts and corner radius are defined here once,
+ * as CSS variables, and every component reads them. To re-theme the whole app,
+ * change the values below — nothing else needs to be touched.
+ *
+ * Fonts are bundled with the app (@fontsource packages), so they also work
+ * offline once the app is installed on the phone.
+ */
+@import '@fontsource/fredoka-one';
+@import '@fontsource/nunito';
+@import '@fontsource/jetbrains-mono';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Warm cream background, charcoal text (never pure black — design rule) */
+    --background: 37 100% 96%; /* #FFF6EA */
+    --foreground: 26 9% 14%; /* #26221F charcoal */
+    --card: 0 0% 100%;
+    --card-foreground: 26 9% 14%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 26 9% 14%;
+    /* Vermelho Vibrante = primary action color */
+    --primary: 348 100% 55%; /* #FF1744 */
+    --primary-foreground: 0 0% 100%;
+    /* Light papaya = quiet surfaces */
+    --secondary: 32 100% 89%; /* #FFE7C7 */
+    --secondary-foreground: 26 9% 14%;
+    --muted: 33 100% 93%;
+    --muted-foreground: 30 17% 40%;
+    /* Laranja Radiante = warm accent / secondary CTA */
+    --accent: 33 100% 50%; /* #FF9100 */
+    --accent-foreground: 26 9% 14%;
+    --destructive: 348 100% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 33 40% 82%;
+    --input: 33 40% 75%;
+    /* Azul Elétrico = focus rings (design rule) */
+    --ring: 187 100% 42%;
+    /* Base corner radius from design.md: 25px everywhere */
+    --radius: 25px;
+    --sidebar-background: 37 100% 96%;
+    --sidebar-foreground: 26 9% 14%;
+    --sidebar-primary: 348 100% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 32 100% 89%;
+    --sidebar-accent-foreground: 26 9% 14%;
+    --sidebar-border: 33 40% 82%;
+    --sidebar-ring: 187 100% 42%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+    /* Comfortable reading measure, per design.md */
+    line-height: 1.6;
+  }
+}
+
+@layer utilities {
+  /*
+   * Subtle tropical dot pattern, used as a decorative background band
+   * (repetitive patterns are a signature of the Happy Art style).
+   */
+  .bg-tropical-dots {
+    background-image: radial-gradient(rgba(38, 34, 31, 0.08) 2.5px, transparent 2.5px);
+    background-size: 22px 22px;
+  }
+}
