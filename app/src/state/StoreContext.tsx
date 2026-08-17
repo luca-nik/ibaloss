@@ -17,6 +17,7 @@ import type { AppState, Direction, Grade, LangId, TenseId, Verb, Word } from '@/
 import { scheduler } from '@/core/scheduler';
 import { todayStr } from '@/core/dates';
 import { EMPTY_STATE, loadAll, saveAll, exportJson, parseImport, wipeAll } from '@/data/repository';
+import { localUpdatedAt, pullSnapshot, pushSnapshot } from '@/data/remote';
 
 /** A simple unique id: random part + time part (good enough for one user's data). */
 function uid(): string {
@@ -61,14 +62,23 @@ function bumpActivity(state: AppState, grade: Grade): AppState {
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AppState | null>(null);
 
-  // First launch: read the saved data from the local database once.
+  // First launch: read the saved data from the local database once,
+  // then check the cloud: if the snapshot there is newer, adopt it.
   useEffect(() => {
-    loadAll().then(setState);
+    loadAll().then(async (local) => {
+      setState(local);
+      const [remote, localTs] = await Promise.all([pullSnapshot(), localUpdatedAt()]);
+      if (remote && remote.updatedAt > localTs) setState(remote.state);
+    });
   }, []);
 
-  // After every change, persist the new state (skipping the initial null).
+  // After every change, persist the new state (skipping the initial null)
+  // and mirror it to the cloud snapshot (a no-op until sync is set up).
   useEffect(() => {
-    if (state) void saveAll(state);
+    if (state) {
+      void saveAll(state);
+      pushSnapshot(state);
+    }
   }, [state]);
 
   const store = useMemo<Store>(() => {

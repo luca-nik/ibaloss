@@ -8,12 +8,13 @@
  * 3. Danger zone: erase everything and start over.
  */
 import { useRef, useState } from 'react';
-import { Brain, Download, Upload } from 'lucide-react';
+import { Brain, CloudUpload, Download, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useStore } from '@/state/StoreContext';
+import { getPassphrase, pushSnapshotNow, setPassphrase } from '@/data/remote';
 
 interface Props {
   onOpenHowItWorks: () => void;
@@ -23,8 +24,23 @@ export default function SettingsScreen({ onOpenHowItWorks }: Props) {
   const { state, setNewPerDay, setSessionCap, exportBackup, importBackup, resetAll } = useStore();
   const fileRef = useRef<HTMLInputElement>(null);
   const [message, setMessage] = useState('');
+  const [passphrase, setLocalPassphrase] = useState(getPassphrase());
+  const [syncMessage, setSyncMessage] = useState('');
 
   if (!state) return null;
+
+  /** Save the passphrase and immediately push a snapshot, to prove it works. */
+  async function activateSync() {
+    setPassphrase(passphrase.trim());
+    setSyncMessage('Sincronizzazione in corso…');
+    if (!state) return;
+    const ok = await pushSnapshotNow(state);
+    setSyncMessage(
+      ok
+        ? 'Sincronizzazione attiva: i tuoi dati sono ora anche nel cloud.'
+        : 'Non riesco a contattare il server. Controlla la passphrase e la connessione.',
+    );
+  }
 
   /** Download the whole vocabulary as a JSON file. */
   function downloadBackup() {
@@ -98,6 +114,32 @@ export default function SettingsScreen({ onOpenHowItWorks }: Props) {
           <Button variant="outline" onClick={onOpenHowItWorks}>
             <Brain className="mr-1 h-4 w-4" /> Come funziona
           </Button>
+        </CardContent>
+      </Card>
+
+      <Card className="border-2 border-tropical-charcoal/15">
+        <CardHeader>
+          <CardTitle className="text-lg">Sincronizzazione cloud</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="font-accent text-sm text-muted-foreground">
+            Con la passphrase del tuo server, ogni modifica viene copiata automaticamente nel cloud
+            e ripristinata su un nuovo dispositivo. L'app continua a funzionare offline.
+          </p>
+          <div className="space-y-2">
+            <Label htmlFor="sync-passphrase">Passphrase</Label>
+            <Input
+              id="sync-passphrase"
+              type="password"
+              value={passphrase}
+              onChange={(e) => setLocalPassphrase(e.target.value)}
+              placeholder="La passphrase del server"
+            />
+          </div>
+          <Button variant="outline" onClick={() => void activateSync()} disabled={!passphrase.trim()}>
+            <CloudUpload className="mr-1 h-4 w-4" /> Attiva sincronizzazione
+          </Button>
+          {syncMessage && <p className="text-sm font-semibold text-primary">{syncMessage}</p>}
         </CardContent>
       </Card>
 

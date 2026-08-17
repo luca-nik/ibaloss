@@ -10,7 +10,7 @@
  * Bump CACHE_NAME whenever you want phones to throw away old cached files
  * and download everything fresh.
  */
-const CACHE_NAME = 'il-mio-francese-v1';
+const CACHE_NAME = 'ibaloss-v2';
 
 // Take control as soon as possible after an update.
 self.addEventListener('install', () => self.skipWaiting());
@@ -27,6 +27,8 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+  // Never cache API calls (cloud sync): they must always hit the network.
+  if (new URL(event.request.url).pathname.startsWith('/api/')) return;
 
   event.respondWith(
     (async () => {
