@@ -129,7 +129,11 @@ export default function QuizScreen({ initialItems, title, onExit, onPlayMore }: 
         </p>
         <div className="flex flex-col items-center gap-3">
           {moreWaiting && onPlayMore && (
-            <Button onClick={onPlayMore} size="lg" className="shadow-pop">
+            <Button
+              onClick={onPlayMore}
+              size="lg"
+              className="bg-tropical-green text-tropical-charcoal shadow-pop hover:bg-tropical-green/90"
+            >
               Continua a giocare
             </Button>
           )}
@@ -229,21 +233,28 @@ function WordCard({
         </CardContent>
       </Card>
 
-      {/* Self-grading buttons appear only after the reveal */}
+      {/* Self-grading buttons appear only after the reveal.
+          h-auto + wrapping: the Italian labels are long and would overflow
+          the fixed-height, no-wrap default button style on narrow screens. */}
       {phase === 'reveal' && (
         <div className="mt-4 grid grid-cols-3 gap-2">
-          <Button variant="destructive" onClick={() => onGrade('again')} autoFocus>
+          <Button
+            variant="destructive"
+            onClick={() => onGrade('again')}
+            autoFocus
+            className="h-auto min-h-12 whitespace-normal px-2 py-2.5 text-center leading-tight"
+          >
             <RotateCcw className="mr-1 h-4 w-4" /> Non la sapevo
           </Button>
           <Button
             onClick={() => onGrade('good')}
-            className="bg-tropical-cyan text-white hover:bg-tropical-cyan/90"
+            className="h-auto min-h-12 whitespace-normal bg-tropical-green px-2 py-2.5 text-center leading-tight text-tropical-charcoal hover:bg-tropical-green/90"
           >
             <Check className="mr-1 h-4 w-4" /> La sapevo
           </Button>
           <Button
             variant="outline"
-            className="border-tropical-charcoal/25 bg-tropical-green/25 hover:bg-tropical-green/45"
+            className="h-auto min-h-12 whitespace-normal border-tropical-charcoal/25 bg-tropical-green/25 px-2 py-2.5 text-center leading-tight hover:bg-tropical-green/45"
             onClick={() => onGrade('easy')}
           >
             <Sparkles className="mr-1 h-4 w-4" /> Facile
@@ -345,12 +356,22 @@ function VerbCard({
             </div>
           )}
           {wasCorrect ? (
-            <Button className="w-full" size="lg" onClick={onContinue} autoFocus>
+            <Button
+              className="w-full bg-tropical-green text-tropical-charcoal hover:bg-tropical-green/90"
+              size="lg"
+              onClick={onContinue}
+              autoFocus
+            >
               Continua
             </Button>
           ) : (
             <div className="grid grid-cols-1 gap-2">
-              <Button className="w-full" size="lg" onClick={onContinue} autoFocus>
+              <Button
+                className="w-full bg-tropical-green text-tropical-charcoal hover:bg-tropical-green/90"
+                size="lg"
+                onClick={onContinue}
+                autoFocus
+              >
                 Continua (la rivedremo presto)
               </Button>
               <Button variant="ghost" size="sm" onClick={onTypo}>
