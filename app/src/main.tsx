@@ -27,4 +27,12 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
       // Offline support is a bonus; if registration fails the app still works online.
     });
   });
+
+  // When a NEW version of the app takes over (the server was updated),
+  // reload once so the user immediately sees it. The guard skips the very
+  // first install, where no service worker was controlling the page before.
+  const hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (hadController) window.location.reload();
+  });
 }
