@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- iBaloss mascot: a happy yellow speech bubble.
+       Palette = the app's "tropical" theme colors. -->
+  <g>
+    <!-- soft ground shadow -->
+    <ellipse cx="262" cy="464" rx="112" ry="14" fill="#26221F" opacity="0.08"/>
+    <!-- speech-bubble tail (drawn first, the blob overlaps it) -->
+    <path d="M 152 398 Q 106 452 70 470 Q 132 474 172 440 Z" fill="#FFD600"/>
+    <!-- the bubble -->
+    <ellipse cx="262" cy="288" rx="170" ry="156" fill="#FFD600"/>
+    <!-- eyes -->
+    <ellipse cx="208" cy="262" rx="36" ry="42" fill="#FFFFFF"/>
+    <ellipse cx="316" cy="262" rx="36" ry="42" fill="#FFFFFF"/>
+    <circle cx="217" cy="274" r="19" fill="#26221F"/>
+    <circle cx="307" cy="274" r="19" fill="#26221F"/>
+    <circle cx="210" cy="267" r="6.5" fill="#FFFFFF"/>
+    <circle cx="300" cy="267" r="6.5" fill="#FFFFFF"/>
+    <!-- eyebrows -->
+    <path d="M 180 206 Q 197 195 215 200" stroke="#26221F" stroke-width="11" stroke-linecap="round" fill="none"/>
+    <path d="M 309 200 Q 327 195 344 206" stroke="#26221F" stroke-width="11" stroke-linecap="round" fill="none"/>
+    <!-- open smile + tongue -->
+    <path d="M 228 342 Q 262 352 296 342 Q 292 384 262 386 Q 232 384 228 342 Z" fill="#26221F"/>
+    <ellipse cx="268" cy="372" rx="17" ry="10" fill="#FF5252" transform="rotate(-8 268 372)"/>
+    <!-- floating marks: teal A, teal squiggle, coral comma -->
+    <g transform="translate(96 96) rotate(-12)" stroke="#00B8D4" stroke-width="15" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <path d="M -28 30 L 0 -34 L 28 30"/>
+      <path d="M -14 8 L 14 8"/>
+    </g>
+    <path d="M 34 292 q 14 -26 28 0 q 14 26 28 0" stroke="#00B8D4" stroke-width="13" stroke-linecap="round" fill="none"/>
+    <circle cx="410" cy="96" r="17" fill="#FF5252"/>
+    <path d="M 422 110 Q 416 142 390 154" stroke="#FF5252" stroke-width="15" stroke-linecap="round" fill="none"/>
+  </g>
+</svg>
