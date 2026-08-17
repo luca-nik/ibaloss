@@ -1,10 +1,13 @@
 /**
  * VerbFormScreen.tsx — Adding or editing one verb with its conjugations.
  *
- * You enter the verb once: infinitive, Italian translation, chapter. Then
- * you tick the tenses you have studied so far and fill in the six forms
- * for each. The quiz (QuizScreen) will then ask you random person+tense
+ * You enter the verb once: infinitive and Italian translation. Then you
+ * tick the tenses you have studied so far and fill in the six forms for
+ * each. The quiz (QuizScreen) will then ask you random person+tense
  * combinations from these tables.
+ *
+ * The accented-characters bar stays hidden behind a small toggle button
+ * and appears only when you ask for it.
  *
  * Empty persons are allowed (e.g. you haven't learned "ils" yet) — they are
  * simply never asked. For compound tenses like passé composé, type the full
@@ -19,7 +22,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AccentBar from '@/components/AccentBar';
 import { useStore } from '@/state/StoreContext';
-import { allChapters } from '@/core/session';
 import { PERSONS, TENSES, type Conj, type TenseId, type Verb } from '@/core/types';
 
 const EMPTY_CONJ: Conj = ['', '', '', '', '', ''];
@@ -30,10 +32,11 @@ interface Props {
 }
 
 export default function VerbFormScreen({ editing, onDone }: Props) {
-  const { state, addVerb, updateVerb } = useStore();
+  const { addVerb, updateVerb } = useStore();
   const [infinitive, setInfinitive] = useState(editing?.infinitive ?? '');
   const [it, setIt] = useState(editing?.it ?? '');
-  const [chapter, setChapter] = useState(editing?.chapter ?? '');
+  // Hidden extra: the accent bar opens on demand.
+  const [showAccents, setShowAccents] = useState(false);
   // Which tenses are shown (and quizzed). "Présent" is preselected for new verbs.
   const [activeTenses, setActiveTenses] = useState<TenseId[]>(
     editing ? TENSES.filter((t) => editing.tenses[t.id]).map((t) => t.id) : ['present'],
@@ -44,7 +47,6 @@ export default function VerbFormScreen({ editing, onDone }: Props) {
     for (const t of TENSES) init[t.id] = editing?.tenses[t.id] ? ([...editing.tenses[t.id]!] as Conj) : [...EMPTY_CONJ];
     return init;
   });
-  const chapters = state ? allChapters(state) : [];
 
   const valid = infinitive.trim() && it.trim() && activeTenses.length > 0;
 
@@ -67,7 +69,13 @@ export default function VerbFormScreen({ editing, onDone }: Props) {
     for (const t of activeTenses) {
       if (forms[t].some((f) => f.trim())) tenses[t] = forms[t].map((f) => f.trim()) as Conj;
     }
-    const payload = { infinitive: infinitive.trim(), it: it.trim(), chapter: chapter.trim(), tenses };
+    // The chapter field no longer exists in the form; existing verbs keep theirs.
+    const payload = {
+      infinitive: infinitive.trim(),
+      it: it.trim(),
+      chapter: editing?.chapter ?? '',
+      tenses,
+    };
     if (editing) updateVerb(editing.id, payload);
     else addVerb(payload);
     onDone();
@@ -80,7 +88,7 @@ export default function VerbFormScreen({ editing, onDone }: Props) {
           <CardTitle className="text-2xl">{editing ? 'Modifica verbo' : 'Aggiungi un verbo'}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="v-inf">Infinito (francese)</Label>
               <Input id="v-inf" value={infinitive} onChange={(e) => setInfinitive(e.target.value)} placeholder="parler" autoFocus autoCapitalize="off" autoCorrect="off" />
@@ -89,18 +97,25 @@ export default function VerbFormScreen({ editing, onDone }: Props) {
               <Label htmlFor="v-it">Traduzione (italiano)</Label>
               <Input id="v-it" value={it} onChange={(e) => setIt(e.target.value)} placeholder="parlare" />
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="v-ch">Capitolo / lezione (facoltativo)</Label>
-              <Input id="v-ch" value={chapter} onChange={(e) => setChapter(e.target.value)} placeholder="Capitolo 4" list="chapters" />
-              <datalist id="chapters">
-                {chapters.map((c) => (
-                  <option key={c} value={c} />
-                ))}
-              </datalist>
-            </div>
           </div>
 
-          <AccentBar />
+          {/* Hidden extra: tap to reveal the French accents */}
+          <div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground"
+              onClick={() => setShowAccents((v) => !v)}
+            >
+              <span className="mr-1 font-semibold">à ç é</span> caratteri speciali
+            </Button>
+            {showAccents && (
+              <div className="mt-2">
+                <AccentBar />
+              </div>
+            )}
+          </div>
 
           <div className="space-y-2">
             <Label>Tempi verbali da esercitare</Label>
