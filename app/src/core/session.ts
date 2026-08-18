@@ -141,6 +141,38 @@ export function buildSession(state: AppState, chapter?: string): QuizItem[] {
 }
 
 /**
+ * Practice on demand ("Allenati comunque"): a round drawn from the WHOLE
+ * deck — due cards, not-yet-due cards, even never-seen ones — shuffled and
+ * capped at sessionCap. Grading still counts toward the schedule: reviewing
+ * a card early simply moves its next appointment.
+ */
+export function buildPracticeSession(state: AppState): QuizItem[] {
+  const lang = state.settings.lang;
+  const items: QuizItem[] = [];
+
+  for (const w of state.words) {
+    if (w.lang !== lang) continue;
+    items.push({ kind: 'word', key: w.id, word: w, dir: randomDir(), isNew: w.progress.state === 'new' });
+  }
+  for (const v of state.verbs) {
+    if (v.lang !== lang) continue;
+    for (const t of verbTenseIds(v)) {
+      const p = v.progress[t];
+      items.push({
+        kind: 'verb',
+        key: `${v.id}:${t}`,
+        verb: v,
+        tense: t,
+        personIdx: Math.floor(Math.random() * 6),
+        isNew: !p || p.state === 'new',
+      });
+    }
+  }
+
+  return shuffle(items).slice(0, state.settings.sessionCap);
+}
+
+/**
  * The current streak: how many consecutive days (ending today, or yesterday
  * if today hasn't started yet) had at least one graded card.
  */

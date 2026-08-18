@@ -7,7 +7,7 @@
  * chapter of your textbook on demand.
  */
 import { useState } from 'react';
-import { BookOpen, Flame, GraduationCap, Layers, Play } from 'lucide-react';
+import { BookOpen, Dumbbell, Flame, GraduationCap, Layers, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -19,9 +19,10 @@ import { LANGUAGES } from '@/core/types';
 interface Props {
   onStartDaily: () => void;
   onStartChapter: (chapter: string) => void;
+  onStartPractice: () => void;
 }
 
-export default function HomeScreen({ onStartDaily, onStartChapter }: Props) {
+export default function HomeScreen({ onStartDaily, onStartChapter, onStartPractice }: Props) {
   const { state } = useStore();
   const [chapter, setChapter] = useState<string>('');
 
@@ -91,6 +92,18 @@ export default function HomeScreen({ onStartDaily, onStartChapter }: Props) {
           vedrai continuando a giocare, o domani.
         </p>
       )}
+
+      {/* Practice on demand: a shuffled round from the whole deck, anytime —
+          even when the daily session is done or there is nothing due. */}
+      <Button
+        size="lg"
+        variant="outline"
+        className="w-full border-2 border-tropical-charcoal/20"
+        onClick={onStartPractice}
+        disabled={empty}
+      >
+        <Dumbbell className="mr-2 h-5 w-5" /> Allenati comunque
+      </Button>
 
       {/* Friendly empty state for first-time users */}
       {empty && (

@@ -9,7 +9,7 @@
 import { useState } from 'react';
 import { BookPlus, Home, LibraryBig, ListPlus, Settings, Trophy } from 'lucide-react';
 import { StoreProvider, useStore } from '@/state/StoreContext';
-import { buildSession, type QuizItem } from '@/core/session';
+import { buildPracticeSession, buildSession, type QuizItem } from '@/core/session';
 import type { Verb, Word } from '@/core/types';
 import HomeScreen from '@/screens/HomeScreen';
 import QuizScreen from '@/screens/QuizScreen';
@@ -64,13 +64,25 @@ function Shell() {
     setView({ name: 'quiz', items, title: chapter ?? 'Sessione di oggi', sessionId: Date.now() });
   }
 
+  /** Practice on demand: a round from the whole deck, due or not. */
+  function startPractice() {
+    if (!state) return;
+    const items = buildPracticeSession(state);
+    if (items.length === 0) return;
+    setView({ name: 'quiz', items, title: 'Allenamento libero', sessionId: Date.now() });
+  }
+
   const goHome = () => setView({ name: 'home' });
 
   return (
     // min-h-[100dvh] (not h-screen) so it behaves on mobile browsers — design rule
     <div className="min-h-[100dvh] pb-24">
       {view.name === 'home' && (
-        <HomeScreen onStartDaily={() => startSession()} onStartChapter={(c) => startSession(c)} />
+        <HomeScreen
+          onStartDaily={() => startSession()}
+          onStartChapter={(c) => startSession(c)}
+          onStartPractice={startPractice}
+        />
       )}
       {view.name === 'library' && (
         <LibraryScreen
